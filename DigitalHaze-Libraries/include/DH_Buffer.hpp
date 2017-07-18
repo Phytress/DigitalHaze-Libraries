@@ -1,7 +1,7 @@
-/* A
+/*
  * The MIT License
  *
- * Copyright 2017 phytress.
+ * Copyright 2017 Syed Ali <Syed.Ali@digital-haze.org>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,130 +39,167 @@ namespace DigitalHaze {
 	class Buffer {
 	public:
 		// sizeInBytes: The length of the buffer in bytes.
-		// reallocSize: If the buffer overflows, we reallocate a larger
+		// reallocSize:
+		//  If the buffer overflows, we reallocate a larger
 		//  buffer by allocating this many more bytes. If reallocSize
 		//  is zero, std::overflow_error is thrown on overflow.
-		// Throws bad_array_new_length on zero sizeInBytes
+		// throws:
+		//   bad_array_new_length on zero sizeInBytes.
+		//   bad_alloc on allocation errors.
 		explicit Buffer(size_t sizeInBytes, size_t reallocSize = 0);
 		~Buffer();
 
-		// Read data from the position in the buffer.
-		// On success, returns true and discards the read
-		// data from the buffer.
-		// Returns false if there is not enough data.
+		// Read data into specified buffer.
+		// outBuffer: Data is output to this buffer.
+		// len: The length of the data to read into the output buffer.
+		// offset: An offset from the beginning of the buffer to read from.
+		// return: On success, returns true. Returns false if not enough data.
+		// throws:
+		//   out_of_range if specified offset is invalid.
 		bool Read(void* outBuffer, size_t len, size_t offset = 0);
 
-		// Peek data from the beginning of the buffer.
-		// On success, returns true and discards the read
-		// data from the buffer.
-		// Returns false if there is not enough data.
+		// Peek data into specified buffer.
+		// See Read parameters.
 		bool Peek(void* outBuffer, size_t len, size_t offset = 0) const;
 
 		// Write data to the end of the buffer.
-		// If there is not enough space in the buffer,
-		// more space is allocated in the buffer. If the reallocSize
-		// was specified as zero, then overflow_error is thrown.
-		// If insertOffset is -1, the write will occur at the
-		// end the buffer as normal.
+		// inBuffer: data from this buffer will be stored.
+		// len: the length of data to grab from the input buffer.
+		// insertOffset: if not -1, then data is inserted at a specified
+		//   position. Otherwise, data is inserted to the end of the buffer.
+		// throws:
+		//   overflow_error if insertOffset is invalid.
+		//   overflow_error if this would result in an overflow and reallocating
+		//     more data is not allowed.
+		//   bad_alloc on reallocation errors
 		void Write(void* inBuffer, size_t len, ssize_t insertOffset = -1);
 
-		// Notify that we wrote to the buffer provided by GetBufferEnd
+		// Notify that we wrote to the buffer provided by GetBufferEnd.
+		// This will increase the size of the buffer.
+		// len: number of bytes written to the buffer.
+		// throws: overflow_error if the number of bytes exceeded the length
+		//   of the buffer. Ensure space is available. And if not, then expand.
 		void NotifyWrite(size_t len);
 
 		// Notify that we want to expand the buffer by this many bytes.
-		// If parameter is zero, we use the realloc size provided in initialization.
-		// This will throw bad_alloc exceptions if there is an allocation failure.
+		// additionalBytes: if zero, we use the realloc size provided in initialization.
+		// throws:
+		//   bad_alloc if there is an allocation failure.
+		//   invalid_argument if additionalBytes AND realloc size are zero.
 		void ExpandBuffer(size_t additionalBytes = 0);
 
 		// Notify that we want to expand the buffer by this many bytes.
-		// The actual amount of bytes additionally allocated may be higher, and
-		// the total size will align to the nearest multiple of our realloc size.
-		// If realloc size is not set, then this function works the same
-		// as NotifyExpand. If parameter is zero, then realloc size provided
-		// in initialization is used. Will throw bad_alloc if allocation failure.
+		// That number of bytes is rounded up to a multiple of the realloc size.
+		// If no realloc size was provided, this function is identical to
+		// ExpandBuffer.
+		// additionalBytes: if zero, we use the realloc size provided in initialization.
+		// throws: bad_alloc if there is an allocation failure.
 		void ExpandBufferAligned(size_t additionalBytes = 0);
 
-		// Reads from the buffer and copies the memory into the variable
-		// and removes that memory from the buffer.
-		// Returns false if there is not enough data in the buffer.
+		// See: Read
 		template<class vType>
 		inline bool ReadVar(vType& var, size_t offset = 0);
 
-		// Reads from the buffer and copies the memory into the variable.
-		// Does not remove the data from buffer as if it had never been read.
-		// Returns false if there is not enough data in the buffer.
+		// See: Peek
 		template<class vType>
 		inline bool PeekVar(vType& var, size_t offset = 0) const;
 
-		// Writes variable into the buffer.
+		// See: Write
 		template<class vType>
 		inline void WriteVar(vType var, ssize_t offset = -1);
 
-		// Reads a string from the internal buffer and stores it into
-		// the passed buffer up to specified number of bytes.
-		// If a string terminating character (only \n and \0) is not
-		// found within the read bytes, then 0 is returned.
-		// Returns the length of the string. If there is not enough
-		// space to store the string, maxLen+1 is returned.
+		// Reads a string from the internal buffer. A string, for this function,
+		// is terminated by either a \0 or a \n.
+		// outString: where the string will be stored.
+		// maxLen: the maximum number of bytes to read, including null terminator.
+		// offset: specifies where to begin reading data from.
+		// returns:
+		//   The length in bytes of the string, OR
+		//   0: if there is no string (delimiter not found)
+		//   maxLen+1: if the string is too large.
 		size_t ReadString(char* outString, size_t maxLen, size_t offset = 0);
 
-		// Reads a string from the internal buffer and stores it into
-		// the passed buffer up to specified number of bytes. Does not
-		// remove it from the internal buffer, as if it had never been read.
-		// If a string terminating character (only \n and \0) is not
-		// found within the read bytes, then 0 is returned.
-		// Returns the length of the string. If there is not enough
-		// space to store the string, maxLen+1 is returned.
+		// Peeks a string from the internal buffer. A string, for this function,
+		// is terminated by either a \0 or a \n.
+		// See: ReadString
 		size_t PeekString(char* outString, size_t maxLen, size_t offset = 0) const;
 
-		// Writes a formatted string into the buffer.
-		// Does not write a null terminator. That must be specified
-		// as a \0 at the end of the string.
+		// Writes a formatted string into the buffer. Does not write any
+		// string terminators (such as \0 or \n) UNLESS specified in fmtStr.
+		// fmtStr: Formatted string
+		// returns:
+		//   number of bytes written
+		//   0: allocation or some other error.
 		size_t WriteString(const char* fmtStr, ...);
-		
-		// Writes a formatted string and inserts it at the specified
-		// position in our buffer. Does not write null terminator,
-		// that must be specified as a \0.
+
+		// Writes a formatted string and inserts it at the specified offset
+		// position in our buffer.
+		// See: WriteString
 		size_t WriteStringAtOffset(size_t offset, const char* fmtStr, ...);
 
+		// Get the maximum capacity of our buffer.
+		
 		inline size_t GetBufferSize() const {
 			return bufferSize;
 		}
+
+		// Get the amount of data we're holding.
 
 		inline size_t GetBufferDataLen() const {
 			return bufferLen;
 		}
 
+		// Get the amount of bytes we will reallocate to prevent overflows.
+
 		inline size_t GetBufferReallocSize() const {
 			return bufferReallocSize;
 		}
+
+		// Get the amount of space, in bytes, left in the buffer.
 
 		inline size_t GetRemainingBufferLength() const {
 			return bufferSize - bufferLen;
 		}
 
+		// Get a pointer to the end of the buffer where new writes happen.
+
 		inline void* GetBufferEnd() const {
 			return (void*) ((size_t) buffer + bufferLen);
 		}
+
+		// Get a pointer to the start of the buffer where new reads happen.
 
 		inline void* GetBufferStart() const {
 			return buffer;
 		}
 
-		// Removes bytes from the front of the buffer
-
+		// Removes bytes from the front of the buffer as if it had been read.
+		// bytesToShift: number of bytes to remove.
 		inline void ShiftBufferFromFront(size_t bytesToShift) {
 			ShiftBufferAtOffset(bytesToShift, 0);
 		}
 
-		// Removes bytes from the middle of a buffer
+		// Removes bytes from a specified position in the buffer as if it
+		// had been read.
+		// bytesToShift: number of bytes to remove.
+		// offset: position in our buffer.
+		// throws: out_of_range on bad offset.
 		void ShiftBufferAtOffset(size_t bytesToShift, size_t offset);
 
-		// May remove any data in the buffer. Resets the buffer
-		// with (or without) a resize.
+		// Recreates AND RESETS the buffer.
+		// If a resize is not necessary, then it won't happen, but the length
+		// of the buffer is reset to zero (as if the data is no longer there).
+		// newBufferSize: Size of the new buffer.
+		// newBufferReallocSize:
+		//  If the buffer overflows, we reallocate a larger
+		//  buffer by allocating this many more bytes. If reallocSize
+		//  is zero, std::overflow_error is thrown on overflow.
+		// throws:
+		//  bad_alloc on allocation errors.
+		//  bad_array_new_length if the specified size is invalid (0).
 		void Recreate(size_t newBufferSize, size_t newBufferReallocSize = 0);
 	private:
-		// Length of data in buffer
+		// Length of data active in buffer
 		size_t bufferLen;
 		// Our maximum size for our buffer
 		size_t bufferSize;

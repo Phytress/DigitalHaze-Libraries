@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2017 phytress.
+ * Copyright 2017 Syed Ali <Syed.Ali@digital-haze.org>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 
 DigitalHaze::Buffer::Buffer(size_t sizeInBytes, size_t reallocSize)
 	: bufferSize(0), buffer(nullptr) {
+	// Our recreate function will allocate us.
 	Recreate(sizeInBytes, reallocSize);
 }
 
@@ -43,14 +44,19 @@ DigitalHaze::Buffer::~Buffer() {
 }
 
 bool DigitalHaze::Buffer::Read(void* outBuffer, size_t len, size_t offset) {
-	if (len + offset > bufferLen || !buffer) return false;
-	Peek(outBuffer, len, offset);
+	// Peek the data, if available.
+	if (!Peek(outBuffer, len, offset))
+		return false;
+
+	// Discard it
 	ShiftBufferAtOffset(len, offset);
 	return true;
 }
 
 bool DigitalHaze::Buffer::Peek(void* outBuffer, size_t len, size_t offset) const {
+	// Invalid offset / not enough data available?
 	if (len + offset > bufferLen || !buffer) return false;
+	// Copy
 	memcpy(outBuffer, (void*) ((size_t) buffer + offset), len);
 	return true;
 }
@@ -60,33 +66,45 @@ void DigitalHaze::Buffer::Write(void* inBuffer, size_t len, ssize_t insertOffset
 
 	// If -1, then we insert data to the back of the buffer
 	if (insertOffset == -1) insertOffset = (ssize_t) bufferLen;
-	
+
 	// Is this offset valid?
-	if ((size_t)insertOffset > bufferLen) {
-		throw std::overflow_error(
-								std::string("DigitalHaze::Buffer::Write cannot write ") + std::to_string(len) +
-								std::string(" bytes at offset ") + std::to_string(insertOffset) +
-								std::string(" in a buffer of size ") + std::to_string(bufferSize)
-								);
+	if ((size_t) insertOffset > bufferLen) {
+		// Can't write past our end point
+		throw
+		std::overflow_error(
+							std::string("DigitalHaze::Buffer::Write cannot write ")
+							+ std::to_string(len) + std::string(" bytes at offset ")
+							+ std::to_string(insertOffset)
+							+ std::string(" in a buffer of length ")
+							+ std::to_string(bufferLen)
+							);
 	}
 
 	// Do we have enough space?
 	if (bufferLen + len > bufferSize) {
 		// We need more space
 		if (!bufferReallocSize) {
-			throw std::overflow_error(
-									std::string("DigitalHaze::Buffer::Write ran out of space to store ") + std::to_string(len) +
-									std::string(" bytes in a ") + std::to_string(bufferSize) + std::string(" length buffer"));
+			// If we're not allowed to realloc more data, then this would
+			// cause a buffer overflow
+			throw
+			std::overflow_error(
+								std::string("DigitalHaze::Buffer::Write ran out of space to store ")
+								+ std::to_string(len) + std::string(" bytes in a ")
+								+ std::to_string(bufferSize)
+								+ std::string(" length buffer"));
 		}
 
 		// expand in chunks of bufferReallocSize
 		ExpandBufferAligned(bufferLen + len - bufferSize);
 	}
 
-	// Move current bytes forward
+	// The address at which we're inserting data
 	size_t insertionPoint = (size_t) buffer + insertOffset;
+	// The ending address after data has been written
 	size_t destinationPoint = insertionPoint + len;
+	// The number of bytes to shift forward if inserting data.
 	size_t bytesToForwardShift = bufferLen - insertOffset;
+	// Shift bytes forward
 	memmove((void*) destinationPoint, (void*) insertionPoint, bytesToForwardShift);
 
 	// Copy the new bytes in
@@ -100,7 +118,7 @@ void DigitalHaze::Buffer::NotifyWrite(size_t len) {
 		std::overflow_error(
 							std::string("DigitalHaze::Buffer notified of a write of ") + std::to_string(len) +
 							std::string(" bytes which resulted in an overflow in a ") + std::to_string(bufferSize) +
-							std::string(" length buffer")
+							std::string(" sized buffer")
 							);
 	}
 
@@ -126,6 +144,7 @@ void DigitalHaze::Buffer::ExpandBufferAligned(size_t additionalBytes) {
 		return;
 	}
 
+	// We always expand at least by one multiple of the reallocSize.
 	size_t numBytesExpand = (bufferReallocSize *
 							(((bufferSize + additionalBytes) / bufferReallocSize) + 1))
 			- bufferSize;
@@ -133,8 +152,10 @@ void DigitalHaze::Buffer::ExpandBufferAligned(size_t additionalBytes) {
 }
 
 size_t DigitalHaze::Buffer::ReadString(char* outString, size_t maxLen, size_t offset) {
+	// Peek the string
 	size_t readLen = PeekString(outString, maxLen, offset);
 
+	// Remove from the buffer
 	if (readLen && readLen != maxLen + 1)
 		ShiftBufferAtOffset(readLen + 1, offset); //Remove terminating character
 
@@ -155,10 +176,15 @@ size_t DigitalHaze::Buffer::PeekString(char* outString, size_t maxLen, size_t of
 	// Did we find it in time?
 	if (tokenPos > offset && tokenPos < bufferLen) {
 		size_t stringLength = tokenPos - offset;
-		if (stringLength > maxLen)
+		if (stringLength + 1 > maxLen) // include null terminator
 			return maxLen + 1;
-		memcpy(outString, (void*)((size_t)buffer + offset), stringLength + 1);
-		outString[stringLength + 1] = 0x00; // This doesn't override the line break
+
+		// Copy the string
+		memcpy(outString, (void*) ((size_t) buffer + offset), stringLength + 1);
+
+		// Write a null terminator in case the string's provided terminator
+		// wasn't a \0.
+		outString[stringLength + 1] = 0x00;
 		return stringLength;
 	}
 
@@ -180,7 +206,7 @@ size_t DigitalHaze::Buffer::WriteString(const char* fmtStr, ...) {
 
 	Write(message, (size_t) msgLen);
 
-	free(message);
+	free(message); // vasprintf requires free
 
 	return (size_t) msgLen;
 }
@@ -188,34 +214,38 @@ size_t DigitalHaze::Buffer::WriteString(const char* fmtStr, ...) {
 size_t DigitalHaze::Buffer::WriteStringAtOffset(size_t offset, const char* fmtStr, ...) {
 	char* message = nullptr;
 	int msgLen;
-	
+
 	va_list list;
 	va_start(list, fmtStr);
 	msgLen = vasprintf(&message, fmtStr, list);
 	va_end(list);
-	
-	if(msgLen == -1) return 0;
-	if(!message) return 0;
-	
-	Write(message, (size_t)msgLen, offset);
-	
-	free(message);
-	
+
+	if (msgLen == -1) return 0;
+	if (!message) return 0;
+
+	Write(message, (size_t) msgLen, offset);
+
+	free(message); // vasprintf requires free
+
 	return (size_t) msgLen;
 }
 
 void DigitalHaze::Buffer::ShiftBufferAtOffset(size_t bytesToShift, size_t offset) {
 	if (bytesToShift + offset > bufferLen) {
-		throw std::out_of_range(std::string("DigitalHaze::Buffer Cannot shift ") +
-								std::to_string(bytesToShift) + std::string(" bytes, at ") +
-								std::to_string(offset) + std::string(" offset, only ") +
-								std::to_string(bufferLen) + std::string(" bytes in buffer"));
+		throw
+		std::out_of_range(std::string("DigitalHaze::Buffer Cannot shift ") +
+						std::to_string(bytesToShift) + std::string(" bytes, at ") +
+						std::to_string(offset) + std::string(" offset, only ") +
+						std::to_string(bufferLen) + std::string(" bytes in buffer"));
 	}
 
 	bufferLen -= bytesToShift;
 
+	// Data will be copied to this position/pointer
 	size_t shiftDestPos = (size_t) buffer + offset;
+	// The source is specified by this pointer
 	size_t shiftStartPos = shiftDestPos + bytesToShift;
+	// The number of bytes to shift
 	size_t remainingBytes = bufferLen - offset;
 
 	memmove((void*) shiftDestPos, (void*) shiftStartPos, remainingBytes);
@@ -225,6 +255,7 @@ void DigitalHaze::Buffer::Recreate(size_t newBufferSize, size_t newBufferRealloc
 	if (!newBufferSize)
 		throw std::bad_array_new_length();
 
+	// Reallocate only if we have to. If the size is the same, then don't bother.
 	if (newBufferSize != bufferSize) {
 		buffer = realloc(buffer, newBufferSize);
 
@@ -233,9 +264,13 @@ void DigitalHaze::Buffer::Recreate(size_t newBufferSize, size_t newBufferRealloc
 
 		bufferSize = newBufferSize;
 	}
+	
+	// Reset variables.
 	bufferLen = 0;
 	bufferReallocSize = newBufferReallocSize;
 }
+
+// Begin rule of 5
 
 DigitalHaze::Buffer::Buffer(const Buffer& rhs)
 	: Buffer(rhs.bufferSize, rhs.bufferReallocSize) {
