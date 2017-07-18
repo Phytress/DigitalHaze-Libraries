@@ -28,10 +28,10 @@
 #include <stdexcept>
 
 DigitalHaze::SocketPool::SocketPool(size_t defaultPoolSize,
-									size_t expandSlotSize)
+		size_t expandSlotSize)
 	: ThreadLockedObject(),
 	pollfdsBuffer(sizeof (pollfd) * (defaultPoolSize ? defaultPoolSize : DH_SOCKETPOOL_DEFAULTSIZE),
-				sizeof (pollfd) * expandSlotSize),
+	sizeof (pollfd) * expandSlotSize),
 	readListIndex(0), writeListIndex(0), errorListIndex(0) {
 }
 
@@ -72,16 +72,16 @@ bool DigitalHaze::SocketPool::RemoveSocket(Socket* pSocket) {
 		// This wasn't on our poll list??
 		throw std::logic_error("Error socket found, but not in fd list");
 	}
-	
+
 	size_t temp = 0;
-	if( RemoveSocketFromVector(pSocket,sockList,temp) ) {
+	if (RemoveSocketFromVector(pSocket, sockList, temp)) {
 		// We found the socket in the main vector.
 		// We can remove it from our write, read, and error list if it is
 		// in them.
-		RemoveSocketFromVector(pSocket,readList,readListIndex);
-		RemoveSocketFromVector(pSocket,writeList,writeListIndex);
-		RemoveSocketFromVector(pSocket,errorList,errorListIndex);
-		
+		RemoveSocketFromVector(pSocket, readList, readListIndex);
+		RemoveSocketFromVector(pSocket, writeList, writeListIndex);
+		RemoveSocketFromVector(pSocket, errorList, errorListIndex);
+
 		return true;
 	}
 
@@ -118,8 +118,8 @@ bool DigitalHaze::SocketPool::PollSockets(int milliSeconds) {
 		// If we're not a passive socket
 		if (!sockList[listIndex].passiveSocket) {
 			// non-passive sockets are IOSockets, so do the faster static cast.
-			IOSocket* sockio = static_cast<IOSocket*>(sockList[listIndex].pSocket);
-			
+			IOSocket* sockio = static_cast<IOSocket*> (sockList[listIndex].pSocket);
+
 			// Do we have data in the buffer?
 			if (sockio->GetEgressDataLen()) {
 				// Then we need to check if we can write data
@@ -173,8 +173,8 @@ bool DigitalHaze::SocketPool::PollSockets(int milliSeconds) {
 
 DigitalHaze::Socket*
 DigitalHaze::SocketPool::GetNextEntryFromList(std::vector<socketEntry>& list,
-											  size_t& index,
-											  void** pParam) {
+		size_t& index,
+		void** pParam) {
 	if (index >= list.size()) return nullptr;
 	socketEntry se = list[index++];
 	if (pParam) *pParam = se.pParam;
@@ -211,20 +211,20 @@ bool DigitalHaze::SocketPool::RemoveSocketFromPollList(int sockfd) {
 }
 
 bool DigitalHaze::SocketPool::RemoveSocketFromVector(Socket* pSock,
-													 std::vector<socketEntry>& list,
-													 size_t& vectorIndex) {
-	for( size_t i = 0; i < list.size(); ++i ) {
+		std::vector<socketEntry>& list,
+		size_t& vectorIndex) {
+	for (size_t i = 0; i < list.size(); ++i) {
 		// Compare socketfds (not pointers because the Socket may be std::move'd)
-		if ( list[i].pSocket->sockfd == pSock->sockfd) {
+		if (list[i].pSocket->sockfd == pSock->sockfd) {
 			// We found the socket, erase it.
 			list.erase(list.begin() + i);
-			
+
 			// Is this going to mess up what we're iterating through?
-			if( vectorIndex > i ) --vectorIndex; // fix it
+			if (vectorIndex > i) --vectorIndex; // fix it
 			return true;
 		}
 	}
-	
+
 	return false;
 }
 

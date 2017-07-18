@@ -145,8 +145,8 @@ namespace DigitalHaze {
 
 		// Gets the next socketEntry from the specified list
 		static Socket* GetNextEntryFromList(std::vector<socketEntry>& list,
-									size_t& index,
-									void** pParam = nullptr);
+											size_t& index,
+											void** pParam = nullptr);
 
 		// Returns the index inside sockList where sockfd occurs.
 		// If it is not found, -1 is returned.

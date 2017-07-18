@@ -111,7 +111,7 @@ size_t DigitalHaze::IOSocket::WriteString(const char* fmtStr, ...) {
 void DigitalHaze::IOSocket::CloseSocket() {
 	// Close the fd
 	Socket::CloseSocket();
-	
+
 	// We can keep our buffers allocated (until destructed), but
 	// we need to tell them that theres no need to keep the old data.
 	readBuffer.ShiftBufferFromFront(readBuffer.GetBufferDataLen());
@@ -119,17 +119,20 @@ void DigitalHaze::IOSocket::CloseSocket() {
 }
 
 // copy
+
 DigitalHaze::Socket::Socket(const Socket& rhs)
 	: sockfd(rhs.sockfd), lasterrno(rhs.lasterrno) {
 }
 
 // move
+
 DigitalHaze::Socket::Socket(Socket&& rhs) noexcept
 : sockfd(rhs.sockfd), lasterrno(rhs.lasterrno) {
 	rhs.sockfd = -1;
 }
 
 // copy
+
 DigitalHaze::Socket& DigitalHaze::Socket::operator=(const Socket& rhs) {
 	// Close our current IO fd, if any
 	this->CloseSocket();
@@ -140,6 +143,7 @@ DigitalHaze::Socket& DigitalHaze::Socket::operator=(const Socket& rhs) {
 }
 
 // move
+
 DigitalHaze::Socket& DigitalHaze::Socket::operator=(Socket&& rhs) noexcept {
 	// Close our current IO fd, if any
 	this->CloseSocket();
@@ -156,13 +160,13 @@ DigitalHaze::IOSocket::IOSocket(const IOSocket& rhs)
 }
 
 DigitalHaze::IOSocket::IOSocket(IOSocket&& rhs) noexcept
-	: Socket(rhs),
-	readBuffer(std::move(rhs.readBuffer)), writeBuffer(std::move(rhs.writeBuffer)) {
+: Socket(rhs),
+readBuffer(std::move(rhs.readBuffer)), writeBuffer(std::move(rhs.writeBuffer)) {
 }
 
 DigitalHaze::IOSocket& DigitalHaze::IOSocket::operator=(const IOSocket& rhs) {
 	// Copy our socketfd over
-	Socket::operator =(rhs);
+	Socket::operator=(rhs);
 
 	// copy buffers
 	readBuffer = rhs.readBuffer;
@@ -172,7 +176,7 @@ DigitalHaze::IOSocket& DigitalHaze::IOSocket::operator=(const IOSocket& rhs) {
 
 DigitalHaze::IOSocket& DigitalHaze::IOSocket::operator=(IOSocket&& rhs) noexcept {
 	// Move our socketfd over
-	Socket::operator =(rhs);
+	Socket::operator=(rhs);
 
 	// move buffers
 	readBuffer = std::move(rhs.readBuffer);

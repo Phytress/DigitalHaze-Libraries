@@ -35,16 +35,19 @@
 #include <pthread.h>
 
 namespace DigitalHaze {
+
 	class ThreadLockedObject {
 	public:
 		ThreadLockedObject() noexcept;
 		~ThreadLockedObject();
-		
+
 		void LockObject();
 		void WaitOnCondition(pthread_cond_t& cond);
+
 		inline static void SignalCondition(pthread_cond_t& cond) {
 			pthread_cond_signal(&cond);
 		}
+
 		inline static void BroadcastCondition(pthread_cond_t& cond) {
 			pthread_cond_broadcast(&cond);
 		}

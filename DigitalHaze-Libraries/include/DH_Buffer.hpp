@@ -138,7 +138,7 @@ namespace DigitalHaze {
 		size_t WriteStringAtOffset(size_t offset, const char* fmtStr, ...);
 
 		// Get the maximum capacity of our buffer.
-		
+
 		inline size_t GetBufferSize() const {
 			return bufferSize;
 		}
@@ -175,6 +175,7 @@ namespace DigitalHaze {
 
 		// Removes bytes from the front of the buffer as if it had been read.
 		// bytesToShift: number of bytes to remove.
+
 		inline void ShiftBufferFromFront(size_t bytesToShift) {
 			ShiftBufferAtOffset(bytesToShift, 0);
 		}

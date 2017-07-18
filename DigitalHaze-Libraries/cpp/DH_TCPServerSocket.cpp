@@ -89,8 +89,8 @@ bool DigitalHaze::TCPServerSocket::CreateListener(unsigned short port) {
 	// We need to try to bind to an address provided
 	for (addrinfo* ipResult = servinfo; ipResult; ipResult = ipResult->ai_next) {
 		newsockfd = socket(ipResult->ai_family, // could be v4 or v6
-						ipResult->ai_socktype, // should be SOCK_STREAM
-						ipResult->ai_protocol); // Should be TCP
+				ipResult->ai_socktype, // should be SOCK_STREAM
+				ipResult->ai_protocol); // Should be TCP
 
 		if (newsockfd == -1) {
 			Socket::RecordErrno();
@@ -261,7 +261,7 @@ bool DigitalHaze::TCPServerSocket::CreateThreadedListener(unsigned short port) {
 
 	// Create thread
 	if (0 != pthread_create(&listenerThread, nullptr,
-							DigitalHaze::ListenerThread, (void*) tad)) {
+		DigitalHaze::ListenerThread, (void*) tad)) {
 		Socket::RecordErrno();
 		listenerThreadStatus = ListenerThreadStatusCode::FAILED;
 		delete tad;
@@ -273,7 +273,7 @@ bool DigitalHaze::TCPServerSocket::CreateThreadedListener(unsigned short port) {
 
 DigitalHaze::TCPSocket*
 DigitalHaze::TCPServerSocket::GetNewConnectionFromThread(TCPAddressStorage* newAddr,
-														 socklen_t* newAddrLen) {
+		socklen_t* newAddrLen) {
 	// Check our thread status code
 	if (listenerThreadStatus != ListenerThreadStatusCode::NEWCONNECTION)
 		return nullptr;
@@ -308,7 +308,7 @@ DigitalHaze::TCPServerSocket::GetNewConnectionFromThread(TCPAddressStorage* newA
 
 DigitalHaze::TCPSocket*
 DigitalHaze::TCPServerSocket::GetNewConnection(TCPAddressStorage* newAddr,
-											   socklen_t* newAddrLen) {
+		socklen_t* newAddrLen) {
 	// Check if we're a thread or blocking
 	if (listenerThreadStatus == ListenerThreadStatusCode::UNKNOWN) {
 		// Not in a threaded state, so block until new connection.
@@ -334,8 +334,8 @@ DigitalHaze::TCPServerSocket::GetNewConnection(TCPAddressStorage* newAddr,
 }
 
 void DigitalHaze::TCPServerSocket::Thread_NotifyNewClient(int newfd,
-														  TCPAddressStorage* addr,
-														  socklen_t addrLen) {
+		TCPAddressStorage* addr,
+		socklen_t addrLen) {
 	newsockfd = newfd;
 	memcpy(&remoteAddr, addr, addrLen);
 	remoteAddrLen = addrLen;

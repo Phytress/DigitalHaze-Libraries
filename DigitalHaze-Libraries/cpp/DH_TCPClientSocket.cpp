@@ -52,7 +52,7 @@ DigitalHaze::TCPClientSocket::~TCPClientSocket() {
 }
 
 bool DigitalHaze::TCPClientSocket::AttemptConnect(const char* hostname,
-												  unsigned short port) {
+		unsigned short port) {
 	// Close any threads going on right now
 	// CloseCurrentThreads(); // CloseSocket takes care of this
 	// Close any connection we already have
@@ -84,8 +84,8 @@ bool DigitalHaze::TCPClientSocket::AttemptConnect(const char* hostname,
 
 	for (addrinfo* ipResults = servinfo; ipResults; ipResults = ipResults->ai_next) {
 		newsockfd = socket(ipResults->ai_family,
-						ipResults->ai_socktype,
-						ipResults->ai_protocol);
+				ipResults->ai_socktype,
+				ipResults->ai_protocol);
 
 		if (newsockfd == -1) {
 			// An annoying time to be getting this error
@@ -217,8 +217,8 @@ void* DigitalHaze::ConnectThread(void* data) {
 
 	for (addrinfo* ipResults = servinfo; ipResults; ipResults = ipResults->ai_next) {
 		newsockfd = socket(ipResults->ai_family,
-						ipResults->ai_socktype,
-						ipResults->ai_protocol);
+				ipResults->ai_socktype,
+				ipResults->ai_protocol);
 
 		if (newsockfd == -1) {
 			// An annoying time to be getting this error.
@@ -288,7 +288,7 @@ void* DigitalHaze::ConnectThread(void* data) {
 }
 
 bool DigitalHaze::TCPClientSocket::AttemptThreadedConnect(const char* hostname,
-														  unsigned short port) {
+		unsigned short port) {
 	// Close any other threads
 	// CloseCurrentThreads(); // CloseSocket takes care of this
 	// Close any current connection
@@ -308,7 +308,7 @@ bool DigitalHaze::TCPClientSocket::AttemptThreadedConnect(const char* hostname,
 
 	// create thread
 	if (0 != pthread_create(&connectThread, nullptr,
-							DigitalHaze::ConnectThread, (void*) tcd)) {
+		DigitalHaze::ConnectThread, (void*) tcd)) {
 		// failed to create thread
 		Socket::RecordErrno();
 		connectThreadStatus = ConnectThreadStatusCode::FAILED;
@@ -359,7 +359,7 @@ void DigitalHaze::TCPClientSocket::CloseCurrentThreads() {
 }
 
 void DigitalHaze::TCPClientSocket::SetConnectedAddress(sockaddr* cAddress,
-													   socklen_t cAddressLen) {
+		socklen_t cAddressLen) {
 	if (cAddress)
 		memcpy(&connectedAddress, cAddress, cAddressLen);
 	else {

@@ -64,14 +64,14 @@ bool DigitalHaze::TCPSocket::PerformSocketRead(size_t len, bool flush) {
 
 	// read
 	ssize_t nBytes = recv(IOSocket::sockfd,
-						readBuffer.GetBufferEnd(), len,
-						flush ? MSG_WAITALL : MSG_DONTWAIT);
+			readBuffer.GetBufferEnd(), len,
+			flush ? MSG_WAITALL : MSG_DONTWAIT);
 
 	// error?
 	if (nBytes <= 0) {
 		Socket::RecordErrno();
 		if (!flush && (Socket::lasterrno == EAGAIN ||
-					Socket::lasterrno == EWOULDBLOCK)) {
+			Socket::lasterrno == EWOULDBLOCK)) {
 			// If we're not flushing, then these errors are okay.
 			// We just accomplished nothing instead.
 			return true;
@@ -100,10 +100,10 @@ bool DigitalHaze::TCPSocket::PerformSocketWrite(bool flush) {
 	do {
 		// Attempt send
 		ssize_t nBytes = send(
-							IOSocket::sockfd,
-							(void*) ((size_t) writeBuffer.GetBufferStart() + totalWritten),
-							IOSocket::writeBuffer.GetBufferDataLen() - totalWritten,
-							flush ? 0 : MSG_DONTWAIT);
+				IOSocket::sockfd,
+				(void*) ((size_t) writeBuffer.GetBufferStart() + totalWritten),
+				IOSocket::writeBuffer.GetBufferDataLen() - totalWritten,
+				flush ? 0 : MSG_DONTWAIT);
 
 		if (nBytes <= 0) {
 			Socket::RecordErrno();
@@ -126,11 +126,11 @@ bool DigitalHaze::TCPSocket::isConnected() const {
 }
 
 bool DigitalHaze::TCPSocket::ConvertAddrToText(TCPAddressStorage& addr,
-													  socklen_t len,
-													  char* outText) {
+		socklen_t len,
+		char* outText) {
 	void* paddr;
-	
-	switch( addr.sa.sa_family ) {
+
+	switch (addr.sa.sa_family) {
 		case AF_INET:
 			paddr = &addr.sa_ip4.sin_addr;
 			break;
@@ -140,6 +140,6 @@ bool DigitalHaze::TCPSocket::ConvertAddrToText(TCPAddressStorage& addr,
 		default: // Don't know what kind of address this is.
 			return false;
 	};
-	
-	return nullptr != inet_ntop(addr.sa.sa_family,paddr,outText,len);
+
+	return nullptr != inet_ntop(addr.sa.sa_family, paddr, outText, len);
 }
