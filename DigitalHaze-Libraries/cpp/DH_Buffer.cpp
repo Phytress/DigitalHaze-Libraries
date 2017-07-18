@@ -72,12 +72,12 @@ void DigitalHaze::Buffer::Write(void* inBuffer, size_t len, ssize_t insertOffset
 		// Can't write past our end point
 		throw
 		std::overflow_error(
-							std::string("DigitalHaze::Buffer::Write cannot write ")
-							+ std::to_string(len) + std::string(" bytes at offset ")
-							+ std::to_string(insertOffset)
-							+ std::string(" in a buffer of length ")
-							+ std::to_string(bufferLen)
-							);
+				std::string("DigitalHaze::Buffer::Write cannot write ")
+				+ std::to_string(len) + std::string(" bytes at offset ")
+				+ std::to_string(insertOffset)
+				+ std::string(" in a buffer of length ")
+				+ std::to_string(bufferLen)
+				);
 	}
 
 	// Do we have enough space?
@@ -88,10 +88,10 @@ void DigitalHaze::Buffer::Write(void* inBuffer, size_t len, ssize_t insertOffset
 			// cause a buffer overflow
 			throw
 			std::overflow_error(
-								std::string("DigitalHaze::Buffer::Write ran out of space to store ")
-								+ std::to_string(len) + std::string(" bytes in a ")
-								+ std::to_string(bufferSize)
-								+ std::string(" length buffer"));
+					std::string("DigitalHaze::Buffer::Write ran out of space to store ")
+					+ std::to_string(len) + std::string(" bytes in a ")
+					+ std::to_string(bufferSize)
+					+ std::string(" length buffer"));
 		}
 
 		// expand in chunks of bufferReallocSize
@@ -116,10 +116,10 @@ void DigitalHaze::Buffer::NotifyWrite(size_t len) {
 	if (bufferLen + len > bufferSize || !buffer) {
 		throw
 		std::overflow_error(
-							std::string("DigitalHaze::Buffer notified of a write of ") + std::to_string(len) +
-							std::string(" bytes which resulted in an overflow in a ") + std::to_string(bufferSize) +
-							std::string(" sized buffer")
-							);
+				std::string("DigitalHaze::Buffer notified of a write of ") + std::to_string(len) +
+				std::string(" bytes which resulted in an overflow in a ") + std::to_string(bufferSize) +
+				std::string(" sized buffer")
+				);
 	}
 
 	bufferLen += len;
@@ -146,7 +146,7 @@ void DigitalHaze::Buffer::ExpandBufferAligned(size_t additionalBytes) {
 
 	// We always expand at least by one multiple of the reallocSize.
 	size_t numBytesExpand = (bufferReallocSize *
-							(((bufferSize + additionalBytes) / bufferReallocSize) + 1))
+			(((bufferSize + additionalBytes) / bufferReallocSize) + 1))
 			- bufferSize;
 	ExpandBuffer(numBytesExpand);
 }
@@ -234,9 +234,9 @@ void DigitalHaze::Buffer::ShiftBufferAtOffset(size_t bytesToShift, size_t offset
 	if (bytesToShift + offset > bufferLen) {
 		throw
 		std::out_of_range(std::string("DigitalHaze::Buffer Cannot shift ") +
-						std::to_string(bytesToShift) + std::string(" bytes, at ") +
-						std::to_string(offset) + std::string(" offset, only ") +
-						std::to_string(bufferLen) + std::string(" bytes in buffer"));
+				std::to_string(bytesToShift) + std::string(" bytes, at ") +
+				std::to_string(offset) + std::string(" offset, only ") +
+				std::to_string(bufferLen) + std::string(" bytes in buffer"));
 	}
 
 	bufferLen -= bytesToShift;
@@ -264,7 +264,7 @@ void DigitalHaze::Buffer::Recreate(size_t newBufferSize, size_t newBufferRealloc
 
 		bufferSize = newBufferSize;
 	}
-	
+
 	// Reset variables.
 	bufferLen = 0;
 	bufferReallocSize = newBufferReallocSize;
