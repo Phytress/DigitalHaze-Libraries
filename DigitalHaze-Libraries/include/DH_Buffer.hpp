@@ -116,7 +116,7 @@ namespace DigitalHaze {
 		// returns:
 		//   The length in bytes of the string, OR
 		//   0: if there is no string (delimiter not found)
-		//   maxLen+1: if the string is too large.
+		//   maxLen+1 or larger: if the string is too large, no read occurs.
 		size_t ReadString(char* outString, size_t maxLen, size_t offset = 0);
 
 		// Peeks a string from the internal buffer. A string, for this function,

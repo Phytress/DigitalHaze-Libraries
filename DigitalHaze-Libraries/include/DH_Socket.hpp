@@ -148,7 +148,9 @@ namespace DigitalHaze {
 		// If a string terminating character (only \n and \0) is not
 		// found within the read bytes, then 0 is returned.
 		// Returns the length of the string. If there is not enough
-		// space to store the string, maxLen+1 is returned.
+		// space to store the string, the length of the string is returned
+		// (check if return is greater than maxLen for errors), and
+		// no read takes place.
 		inline size_t ReadString(char* outString, size_t maxLen);
 
 		// Reads a string from the internal buffer and stores it into
@@ -157,8 +159,9 @@ namespace DigitalHaze {
 		// If a string terminating character (only \n and \0) is not
 		// found within the read bytes, then 0 is returned.
 		// Returns the length of the string. If there is not enough
-		// space to store the string, maxLen+1 is returned.
-		// null terminators and line breaks do not count towards the length.
+		// space to store the string, the length of the string in the buffer
+		// is returned (check if return is greater than maxLen for errors),
+		// and no peek takes place.
 		inline size_t PeekString(char* outString, size_t maxLen) const;
 
 		// Writes a formatted string into the buffer.

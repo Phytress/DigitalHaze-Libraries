@@ -156,7 +156,7 @@ size_t DigitalHaze::Buffer::ReadString(char* outString, size_t maxLen, size_t of
 	size_t readLen = PeekString(outString, maxLen, offset);
 
 	// Remove from the buffer
-	if (readLen && readLen != maxLen + 1)
+	if (readLen && readLen <= maxLen)
 		ShiftBufferAtOffset(readLen + 1, offset); //Remove terminating character
 
 	return readLen;
@@ -177,7 +177,7 @@ size_t DigitalHaze::Buffer::PeekString(char* outString, size_t maxLen, size_t of
 	if (tokenPos > offset && tokenPos < bufferLen) {
 		size_t stringLength = tokenPos - offset;
 		if (stringLength + 1 > maxLen) // include null terminator
-			return maxLen + 1;
+			return stringLength + 1;
 
 		// Copy the string
 		memcpy(outString, (void*) ((size_t) buffer + offset), stringLength + 1);
