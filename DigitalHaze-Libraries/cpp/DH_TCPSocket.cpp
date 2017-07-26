@@ -63,7 +63,7 @@ bool DigitalHaze::TCPSocket::PerformSocketRead(size_t len, bool flush) {
 	}
 
 	// read
-	ssize_t nBytes = recv(IOSocket::sockfd,
+	ssize_t nBytes = recv(Socket::sockfd,
 			readBuffer.GetBufferEnd(), len,
 			flush ? MSG_WAITALL : MSG_DONTWAIT);
 
