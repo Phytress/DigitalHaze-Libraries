@@ -70,7 +70,7 @@ bool DigitalHaze::SocketPool::RemoveSocket(Socket* pSocket) {
 	// Erase from our pollfds list, if we haven't already
 	if (!RemoveSocketFromPollList(pSocket->sockfd)) {
 		// This wasn't on our poll list??
-		throw std::logic_error("Error socket found, but not in fd list");
+		throw std::logic_error("Error socket not in fd list");
 	}
 
 	size_t temp = 0;
