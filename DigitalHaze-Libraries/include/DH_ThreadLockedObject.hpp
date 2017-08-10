@@ -41,8 +41,17 @@ namespace DigitalHaze {
 		ThreadLockedObject() noexcept;
 		~ThreadLockedObject();
 
-		void LockObject();
-		void WaitOnCondition(pthread_cond_t& cond);
+		inline void LockObject() {
+			pthread_mutex_lock(&cs_mutex);
+		}
+		
+		inline void UnlockObject() {
+			pthread_mutex_unlock(&cs_mutex);
+		}
+
+		inline void WaitOnCondition(pthread_cond_t& cond) {
+			pthread_cond_wait(&cond, &cs_mutex);
+		}
 
 		inline static void SignalCondition(pthread_cond_t& cond) {
 			pthread_cond_signal(&cond);
@@ -51,7 +60,6 @@ namespace DigitalHaze {
 		inline static void BroadcastCondition(pthread_cond_t& cond) {
 			pthread_cond_broadcast(&cond);
 		}
-		void UnlockObject();
 	private:
 		pthread_mutex_t cs_mutex;
 	};
