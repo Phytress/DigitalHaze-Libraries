@@ -34,15 +34,3 @@ DigitalHaze::ThreadLockedObject::ThreadLockedObject() noexcept
 DigitalHaze::ThreadLockedObject::~ThreadLockedObject() {
 	pthread_mutex_destroy(&cs_mutex);
 }
-
-void DigitalHaze::ThreadLockedObject::LockObject() {
-	pthread_mutex_lock(&cs_mutex);
-}
-
-void DigitalHaze::ThreadLockedObject::WaitOnCondition(pthread_cond_t& cond) {
-	pthread_cond_wait(&cond, &cs_mutex);
-}
-
-void DigitalHaze::ThreadLockedObject::UnlockObject() {
-	pthread_mutex_unlock(&cs_mutex);
-}
