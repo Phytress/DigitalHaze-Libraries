@@ -43,10 +43,16 @@ namespace DigitalHaze {
 		//  If the buffer overflows, we reallocate a larger
 		//  buffer by allocating this many more bytes. If reallocSize
 		//  is zero, std::overflow_error is thrown on overflow.
+		// maxSize:
+		//  If the buffer is given additional bytes, how big is it allowed
+		//  to get? If this value is non-zero and is exceeded, then
+		//  std::overflow_error is thrown when trying to make the buffer
+		//  too large.
 		// throws:
 		//   bad_array_new_length on zero sizeInBytes.
 		//   bad_alloc on allocation errors.
-		explicit Buffer(size_t sizeInBytes, size_t reallocSize = 0);
+		//   invalid_argument on non-zero maxSize less than sizeInBytes
+		explicit Buffer(size_t sizeInBytes, size_t reallocSize = 0, size_t maxSize = 0);
 		~Buffer();
 
 		// Read data into specified buffer.
@@ -86,6 +92,7 @@ namespace DigitalHaze {
 		// throws:
 		//   bad_alloc if there is an allocation failure.
 		//   invalid_argument if additionalBytes AND realloc size are zero.
+		//   overflow_error if the buffer's maximum allowed size is reached.
 		void ExpandBuffer(size_t additionalBytes = 0);
 
 		// Notify that we want to expand the buffer by this many bytes.
@@ -93,7 +100,10 @@ namespace DigitalHaze {
 		// If no realloc size was provided, this function is identical to
 		// ExpandBuffer.
 		// additionalBytes: if zero, we use the realloc size provided in initialization.
-		// throws: bad_alloc if there is an allocation failure.
+		// throws:
+		//   bad_alloc if there is an allocation failure.
+		//   invalid_argument if additionalBytes AND realloc size are zero.
+		//   overflow_error if the buffer's maximum allowed size is reached.
 		void ExpandBufferAligned(size_t additionalBytes = 0);
 
 		// See: Read
@@ -195,10 +205,17 @@ namespace DigitalHaze {
 		//  If the buffer overflows, we reallocate a larger
 		//  buffer by allocating this many more bytes. If reallocSize
 		//  is zero, std::overflow_error is thrown on overflow.
+		// maxSize:
+		//  If the buffer is given additional bytes, how big is it allowed
+		//  to get? If this value is non-zero and is exceeded, then
+		//  std::overflow_error is thrown when trying to make the buffer
+		//  too large.
 		// throws:
 		//  bad_alloc on allocation errors.
 		//  bad_array_new_length if the specified size is invalid (0).
-		void Recreate(size_t newBufferSize, size_t newBufferReallocSize = 0);
+		//  invalid_argument if non-zero maxSize is less than newBufferSize
+		void Recreate(size_t newBufferSize, size_t newBufferReallocSize = 0,
+			size_t maxSize = 0);
 	private:
 		// Length of data active in buffer
 		size_t bufferLen;
@@ -206,6 +223,8 @@ namespace DigitalHaze {
 		size_t bufferSize;
 		// How many bytes to allocate on overflows (can be zero)
 		size_t bufferReallocSize;
+		// How large is a buffer allowed to get? (can be zero)
+		size_t bufferMaxSize;
 		// A malloc'd buffer.
 		void* buffer;
 	public:

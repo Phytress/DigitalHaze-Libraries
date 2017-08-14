@@ -31,8 +31,8 @@
 
 #include <stdarg.h>
 
-DigitalHaze::Buffer::Buffer(size_t sizeInBytes, size_t reallocSize)
-	: bufferSize(0), buffer(nullptr) {
+DigitalHaze::Buffer::Buffer(size_t sizeInBytes, size_t reallocSize, size_t maxSize)
+	: bufferSize(0), bufferMaxSize(maxSize), buffer(nullptr) {
 	// Our recreate function will allocate us.
 	Recreate(sizeInBytes, reallocSize);
 }
@@ -129,6 +129,8 @@ void DigitalHaze::Buffer::ExpandBuffer(size_t additionalBytes) {
 	if (!additionalBytes) additionalBytes = bufferReallocSize;
 	if (!additionalBytes)
 		throw std::invalid_argument("DigitalHaze::Buffer::NotifyExpand cannot expand by 0");
+	if (bufferMaxSize && bufferSize + additionalBytes > bufferMaxSize)
+		throw std::overflow_error(std::string("DigitalHaze::Buffer::ExpandBuffer cannot expand buffer past max size."));
 
 	bufferSize += additionalBytes;
 	buffer = realloc(buffer, bufferSize);
@@ -251,9 +253,12 @@ void DigitalHaze::Buffer::ShiftBufferAtOffset(size_t bytesToShift, size_t offset
 	memmove((void*) shiftDestPos, (void*) shiftStartPos, remainingBytes);
 }
 
-void DigitalHaze::Buffer::Recreate(size_t newBufferSize, size_t newBufferReallocSize) {
+void DigitalHaze::Buffer::Recreate(size_t newBufferSize, size_t newBufferReallocSize,
+		size_t maxSize) {
 	if (!newBufferSize)
 		throw std::bad_array_new_length();
+	if (maxSize && newBufferSize < maxSize)
+		throw std::invalid_argument();
 
 	// Reallocate only if we have to. If the size is the same, then don't bother.
 	if (newBufferSize != bufferSize) {
@@ -268,12 +273,13 @@ void DigitalHaze::Buffer::Recreate(size_t newBufferSize, size_t newBufferRealloc
 	// Reset variables.
 	bufferLen = 0;
 	bufferReallocSize = newBufferReallocSize;
+	bufferMaxSize = maxSize;
 }
 
 // Begin rule of 5
 
 DigitalHaze::Buffer::Buffer(const Buffer& rhs)
-	: Buffer(rhs.bufferSize, rhs.bufferReallocSize) {
+	: Buffer(rhs.bufferSize, rhs.bufferReallocSize, rhs.bufferMaxSize) {
 	// Not too many things other than memory corruption can cause this
 	if (!rhs.buffer)
 		throw std::invalid_argument("DigitalHaze::Buffer::operator= rhs.buffer is nullptr");
@@ -285,11 +291,13 @@ DigitalHaze::Buffer::Buffer(const Buffer& rhs)
 
 DigitalHaze::Buffer::Buffer(Buffer&& rhs) noexcept
 : bufferLen(rhs.bufferLen), bufferSize(rhs.bufferSize),
-bufferReallocSize(rhs.bufferReallocSize), buffer(rhs.buffer) {
+bufferReallocSize(rhs.bufferReallocSize),
+bufferMaxSize(rhs.bufferMaxSize), buffer(rhs.buffer) {
 	rhs.buffer = nullptr;
 	rhs.bufferSize = 0;
 	rhs.bufferLen = 0;
 	rhs.bufferReallocSize = 0;
+	rhs.bufferMaxSize = 0;
 }
 
 DigitalHaze::Buffer& DigitalHaze::Buffer::operator=(const Buffer& rhs) {
@@ -297,7 +305,7 @@ DigitalHaze::Buffer& DigitalHaze::Buffer::operator=(const Buffer& rhs) {
 	if (!rhs.buffer)
 		throw std::invalid_argument("DigitalHaze::Buffer::operator= rhs.buffer is nullptr");
 
-	Recreate(rhs.bufferSize, rhs.bufferReallocSize);
+	Recreate(rhs.bufferSize, rhs.bufferReallocSize, rhs.bufferMaxSize);
 	bufferLen = rhs.bufferLen;
 	memcpy(buffer, rhs.buffer, bufferLen);
 
@@ -313,12 +321,14 @@ DigitalHaze::Buffer& DigitalHaze::Buffer::operator=(Buffer&& rhs) noexcept {
 	bufferLen = rhs.bufferLen;
 	bufferSize = rhs.bufferSize;
 	bufferReallocSize = rhs.bufferReallocSize;
+	bufferMaxSize = rhs.bufferMaxSize;
 
 	// Remove rhs from existance
 	rhs.buffer = nullptr;
 	rhs.bufferSize = 0;
 	rhs.bufferLen = 0;
 	rhs.bufferReallocSize = 0;
+	rhs.bufferMaxSize = 0;
 
 	return *this;
 }
