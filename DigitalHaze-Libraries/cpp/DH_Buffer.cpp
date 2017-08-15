@@ -23,6 +23,7 @@
  */
 
 #include "DH_Buffer.hpp"
+#include "DH_Common.hpp"
 
 #include <exception>
 #include <stdexcept>
@@ -72,11 +73,8 @@ void DigitalHaze::Buffer::Write(void* inBuffer, size_t len, ssize_t insertOffset
 		// Can't write past our end point
 		throw
 		std::overflow_error(
-				std::string("DigitalHaze::Buffer::Write cannot write ")
-				+ std::to_string(len) + std::string(" bytes at offset ")
-				+ std::to_string(insertOffset)
-				+ std::string(" in a buffer of length ")
-				+ std::to_string(bufferLen)
+				stringprintf("DigitalHaze::Buffer::Write cannot write %zu bytes at offset %zd in a buffer of length %zu",
+				len, insertOffset, bufferLen)
 				);
 	}
 
@@ -88,10 +86,9 @@ void DigitalHaze::Buffer::Write(void* inBuffer, size_t len, ssize_t insertOffset
 			// cause a buffer overflow
 			throw
 			std::overflow_error(
-					std::string("DigitalHaze::Buffer::Write ran out of space to store ")
-					+ std::to_string(len) + std::string(" bytes in a ")
-					+ std::to_string(bufferSize)
-					+ std::string(" length buffer"));
+					stringprintf("DigitalHaze::Buffer::Write ran out of space to store %zu bytes in a %zu length buffer",
+					len, bufferSize)
+					);
 		}
 
 		// expand in chunks of bufferReallocSize
@@ -116,9 +113,8 @@ void DigitalHaze::Buffer::NotifyWrite(size_t len) {
 	if (bufferLen + len > bufferSize || !buffer) {
 		throw
 		std::overflow_error(
-				std::string("DigitalHaze::Buffer notified of a write of ") + std::to_string(len) +
-				std::string(" bytes which resulted in an overflow in a ") + std::to_string(bufferSize) +
-				std::string(" sized buffer")
+				stringprintf("DigitalHaze::Buffer::NotifyWrite notified of a write of %zu bytes which resulted in an overflow in a %zu sized buffer",
+				len, bufferSize)
 				);
 	}
 
@@ -128,9 +124,9 @@ void DigitalHaze::Buffer::NotifyWrite(size_t len) {
 void DigitalHaze::Buffer::ExpandBuffer(size_t additionalBytes) {
 	if (!additionalBytes) additionalBytes = bufferReallocSize;
 	if (!additionalBytes)
-		throw std::invalid_argument("DigitalHaze::Buffer::NotifyExpand cannot expand by 0");
+		throw std::invalid_argument("DigitalHaze::Buffer::ExpandBuffer cannot expand by 0");
 	if (bufferMaxSize && bufferSize + additionalBytes > bufferMaxSize)
-		throw std::overflow_error(std::string("DigitalHaze::Buffer::ExpandBuffer cannot expand buffer past max size."));
+		throw std::overflow_error("DigitalHaze::Buffer::ExpandBuffer cannot expand buffer past max size.");
 
 	bufferSize += additionalBytes;
 	buffer = realloc(buffer, bufferSize);
@@ -235,10 +231,10 @@ size_t DigitalHaze::Buffer::WriteStringAtOffset(size_t offset, const char* fmtSt
 void DigitalHaze::Buffer::ShiftBufferAtOffset(size_t bytesToShift, size_t offset) {
 	if (bytesToShift + offset > bufferLen) {
 		throw
-		std::out_of_range(std::string("DigitalHaze::Buffer Cannot shift ") +
-				std::to_string(bytesToShift) + std::string(" bytes, at ") +
-				std::to_string(offset) + std::string(" offset, only ") +
-				std::to_string(bufferLen) + std::string(" bytes in buffer"));
+		std::out_of_range(
+				stringprintf("DigitalHaze::Buffer cannot shift %zu bytes at %zu offset, only %zu bytes in buffer.",
+				bytesToShift, offset, bufferLen)
+				);
 	}
 
 	bufferLen -= bytesToShift;
@@ -258,7 +254,7 @@ void DigitalHaze::Buffer::Recreate(size_t newBufferSize, size_t newBufferRealloc
 	if (!newBufferSize)
 		throw std::bad_array_new_length();
 	if (maxSize && newBufferSize < maxSize)
-		throw std::invalid_argument();
+		throw std::invalid_argument("DigitalHaze::Buffer::Recreate newBufferSize is larger than maxSize");
 
 	// Reallocate only if we have to. If the size is the same, then don't bother.
 	if (newBufferSize != bufferSize) {
