@@ -22,48 +22,35 @@
  * THE SOFTWARE.
  */
 
-#include "DH_Common.hpp"
+/* 
+ * File:   DH_Base64.hpp
+ * Author: Syed Ali <Syed.Ali@digital-haze.org>
+ *
+ * Created on September 16, 2017, 4:22 PM
+ */
 
-#include <stdarg.h>
-#include <string.h>
+#ifndef DH_BASE64_HPP
+#define DH_BASE64_HPP
 
-std::string DigitalHaze::stringprintf(const char* fmtStr, ...) {
-	char* message = nullptr;
-	int msgLen;
+#include <cstdlib>
 
-	va_list list;
-	va_start(list, fmtStr);
-	msgLen = vasprintf(&message, fmtStr, list); // God bless GNU
-	va_end(list);
+namespace DigitalHaze {
+	// Converts an int (first 6 bits only) to a base64 char.
+	// If the int is less than 0 or above 63, then 0x00 is returned
+	char IntToBase64Char(int num);
 
-	if (msgLen == -1) return std::string(""); // allocation error
-	if (!message) return std::string(""); // I think only *BSD does this
+	// Converts a single base64 char to an int
+	// If the char is invalid OR a '=' (which is valid), it returns zero
+	int Base64CharToInt(char c);
 
-	std::string retStr = message;
+	// Converts the src binary data (of length len) to a Base64 string stored in dest.
+	// A null terminator is stored in dest as well. Returns the length of the string
+	size_t Base64Encode(void* src, void* dest, size_t srclen);
 
-	free(message); // vasprintf requires free
-
-	return retStr;
+	// Converts the src base64 data (of length len) to the decoded values, stored in dest.
+	// A null terminator is stored in dest as well. Returns the length of the data
+	size_t Base64Decode(void* src, void* dest, size_t srclen);
 }
 
-void DigitalHaze::displayformatted(void* buf, size_t len) {
-	char readableBuf[17];
-	unsigned char* packet = (unsigned char*) buf;
+#endif /* DH_BASE64_HPP */
 
-	for (size_t pos = 0; pos < len; pos += 16) {
-		int i;
-		memset(readableBuf, 0, sizeof ( readableBuf));
-
-		printf("%.4zX| ", pos);
-		for (i = 0; i < 16 && pos + i < len; ++i) {
-			readableBuf[i] = packet[ pos + i ] < 0x20 ? '.' : (char) packet[ pos + i ];
-			printf("%.2hhX ", packet[ pos + i ]);
-		}
-		for( ; i < 16; ++i ) printf("   ");
-		printf( "|%s\n", readableBuf);
-	}
-}
-
-int DigitalHaze::stringcasecmp(std::string str1, std::string str2) {
-	return strcasecmp( str1.c_str(), str2.c_str() );
-}

@@ -32,10 +32,25 @@
 #ifndef DH_COMMON_HPP
 #define DH_COMMON_HPP
 
+#define COLOR_RED		"\x1b[31m"
+#define COLOR_GREEN		"\x1b[32m"
+#define COLOR_YELLOW	"\x1b[33m"
+#define COLOR_BLUE		"\x1b[34m"
+#define COLOR_MAGENTA	"\x1b[35m"
+#define COLOR_CYAN		"\x1b[36m"
+#define COLOR_RESET		"\x1b[0m"
+
 #include <string>
 
 namespace DigitalHaze {
+	// Converts a formatted string and parameters into a std::string
 	std::string stringprintf(const char* fmtStr, ...);
+	
+	// Formats raw data for output in hex and makes it easier to read.
+	void displayformatted(void* buf, size_t len);
+	
+	// Compares to strings case insensitive
+	int stringcasecmp(std::string str1, std::string str2);
 }
 
 #endif /* DH_COMMON_HPP */

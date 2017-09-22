@@ -123,7 +123,7 @@ namespace DigitalHaze {
 			return Socket::sockfd;
 		}
 	};
-
+	
 	void* ListenerThread(void*);
 }
 

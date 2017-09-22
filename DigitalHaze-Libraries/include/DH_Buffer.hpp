@@ -216,6 +216,12 @@ namespace DigitalHaze {
 		//  invalid_argument if non-zero maxSize is less than newBufferSize
 		void Recreate(size_t newBufferSize, size_t newBufferReallocSize = 0,
 			size_t maxSize = 0);
+		
+		inline void ClearData() {
+			bufferLen = 0;
+		}
+		
+		void* ExportBuffer(size_t& bufLen, size_t& bufSize);
 	private:
 		// Length of data active in buffer
 		size_t bufferLen;

@@ -272,6 +272,21 @@ void DigitalHaze::Buffer::Recreate(size_t newBufferSize, size_t newBufferRealloc
 	bufferMaxSize = maxSize;
 }
 
+void* DigitalHaze::Buffer::ExportBuffer(size_t& bufLen, size_t& bufSize) {
+	bufLen = bufferLen;
+	bufSize = bufferSize;
+	
+	void* retVal = buffer;
+	
+	buffer = nullptr;
+	bufferSize = 0;
+	bufferLen = 0;
+	bufferReallocSize = 0;
+	bufferMaxSize = 0;
+	
+	return retVal;
+}
+
 // Begin rule of 5
 
 DigitalHaze::Buffer::Buffer(const Buffer& rhs)

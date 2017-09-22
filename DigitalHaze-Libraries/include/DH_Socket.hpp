@@ -184,6 +184,18 @@ namespace DigitalHaze {
 
 		// When we close our connection, we can reset our buffers too.
 		virtual void CloseSocket() override;
+		
+		inline void ClearIngressData() {
+			readBuffer.ClearData();
+		}
+		
+		inline void ClearEgressData() {
+			writeBuffer.ClearData();
+		}
+		
+		inline void* GetEgressDataPointer() const {
+			return writeBuffer.GetBufferStart();
+		}
 	private:
 		// We use our own buffers and we do not increase the size
 		// of the send and recv buffer because of several reasons.

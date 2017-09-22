@@ -91,6 +91,12 @@ bool DigitalHaze::TCPServerSocket::CreateListener(unsigned short port) {
 		newsockfd = socket(ipResult->ai_family, // could be v4 or v6
 				ipResult->ai_socktype, // should be SOCK_STREAM
 				ipResult->ai_protocol); // Should be TCP
+		
+		const int trueFlag = 1;
+		if( setsockopt(newsockfd, SOL_SOCKET, SO_REUSEADDR, &trueFlag, sizeof(int)) < 0) {
+			Socket::RecordErrno();
+			continue;
+		}
 
 		if (newsockfd == -1) {
 			Socket::RecordErrno();
