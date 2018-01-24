@@ -27,6 +27,8 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include "zlib.h"
+
 std::string DigitalHaze::stringprintf(const char* fmtStr, ...) {
 	char* message = nullptr;
 	int msgLen;
@@ -59,11 +61,24 @@ void DigitalHaze::displayformatted(void* buf, size_t len) {
 			readableBuf[i] = packet[ pos + i ] < 0x20 ? '.' : (char) packet[ pos + i ];
 			printf("%.2hhX ", packet[ pos + i ]);
 		}
-		for( ; i < 16; ++i ) printf("   ");
-		printf( "|%s\n", readableBuf);
+		for (; i < 16; ++i) printf("   ");
+		printf("|%s\n", readableBuf);
 	}
 }
 
 int DigitalHaze::stringcasecmp(std::string str1, std::string str2) {
-	return strcasecmp( str1.c_str(), str2.c_str() );
+	return strcasecmp(str1.c_str(), str2.c_str());
+}
+
+std::string DigitalHaze::zliberr(int errCode) {
+	switch (errCode) {
+		case Z_BUF_ERROR: return "Destination buffer not large enough";
+			break;
+		case Z_MEM_ERROR: return "insufficient memory";
+			break;
+		case Z_DATA_ERROR: return "compressed data was corrupted";
+			break;
+	};
+	
+	return stringprintf("Unknown error code: %d", errCode);
 }

@@ -264,9 +264,17 @@ bool DigitalHaze::TCPServerSocket::CreateThreadedListener(unsigned short port) {
 
 	// Init
 	listenerThreadStatus = ListenerThreadStatusCode::STARTED;
+	
+	// A listener will only exit when canceled or if an error has occurred.
+	// There is no reason to wait for a listener to close, so we won't
+	// join it when closing the threads. Instead, we will just keep it
+	// as detached.
+	pthread_attr_t threadAttr;
+	pthread_attr_init( &threadAttr );
+	pthread_attr_setdetachstate( &threadAttr, PTHREAD_CREATE_DETACHED );
 
 	// Create thread
-	if (0 != pthread_create(&listenerThread, nullptr,
+	if (0 != pthread_create(&listenerThread, &threadAttr,
 		DigitalHaze::ListenerThread, (void*) tad)) {
 		Socket::RecordErrno();
 		listenerThreadStatus = ListenerThreadStatusCode::FAILED;

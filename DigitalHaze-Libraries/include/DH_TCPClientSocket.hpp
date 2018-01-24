@@ -58,11 +58,15 @@ namespace DigitalHaze {
 		// The return is true if everything is going fine (not if you're
 		// connected). If it is false, the thread or some other part
 		// failed.
+		// To check if you're connected, isConnecting() will return false,
+		// and isConnected() will return true.
 		bool AttemptThreadedConnect(const char* hostname, unsigned short port);
 
 		// If a threaded attempt to connect was attempted
 		// this function will let you know if the thread
 		// is still in process of connecting.
+		// Being successfully connected (or not) will return false.
+		// To check if connected successfully, see isConnected()
 		bool isConnecting() const;
 
 		// Returns what address is currently being used, whether the

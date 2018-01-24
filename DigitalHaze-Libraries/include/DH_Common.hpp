@@ -51,6 +51,9 @@ namespace DigitalHaze {
 	
 	// Compares to strings case insensitive
 	int stringcasecmp(std::string str1, std::string str2);
+	
+	// Returns a text representation of a zlib error code
+	std::string zliberr(int errCode);
 }
 
 #endif /* DH_COMMON_HPP */
