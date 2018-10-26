@@ -74,7 +74,7 @@ bool DigitalHaze::TCPSocket::PerformSocketRead(size_t len, bool flush) {
 			Socket::lasterrno == EWOULDBLOCK)) {
 			// If we're not flushing, then these errors are okay.
 			// We just accomplished nothing instead.
-			//return true;
+			return true;
 		}
 		return false;
 	}

@@ -32,6 +32,8 @@
 
 #include "zlib.h"
 
+#include "zlib.h"
+
 std::string DigitalHaze::stringprintf(const char* fmtStr, ...) {
 	char* message = nullptr;
 	int msgLen;

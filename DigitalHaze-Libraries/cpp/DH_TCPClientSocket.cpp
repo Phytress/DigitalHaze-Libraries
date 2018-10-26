@@ -305,9 +305,16 @@ bool DigitalHaze::TCPClientSocket::AttemptThreadedConnect(const char* hostname,
 
 	// Init
 	connectThreadStatus = ConnectThreadStatusCode::STARTED;
+	
+	// The connect thread will be detached because it will
+	// leave data in a state in which we can tell if it has
+	// already exited or not.
+	pthread_attr_t threadAttr;
+	pthread_attr_init( &threadAttr );
+	pthread_attr_setdetachstate( &threadAttr, PTHREAD_CREATE_DETACHED );
 
 	// create thread
-	if (0 != pthread_create(&connectThread, nullptr,
+	if (0 != pthread_create(&connectThread, &threadAttr,
 		DigitalHaze::ConnectThread, (void*) tcd)) {
 		// failed to create thread
 		Socket::RecordErrno();
