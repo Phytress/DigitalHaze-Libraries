@@ -22,6 +22,8 @@
  * THE SOFTWARE.
  */
 
+#define _GNU_SOURCE
+
 #include "DH_Socket.hpp"
 
 #include <errno.h>
@@ -30,6 +32,7 @@
 
 #include <string>
 #include <stdarg.h>
+#include <stdio.h>
 
 DigitalHaze::Socket::Socket() : sockfd(-1), lasterrno(0) {
 }

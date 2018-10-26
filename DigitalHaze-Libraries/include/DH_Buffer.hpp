@@ -33,6 +33,8 @@
 #define DH_BUFFER_HPP
 
 #include <stdlib.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 namespace DigitalHaze {
 

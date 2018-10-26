@@ -22,6 +22,8 @@
  * THE SOFTWARE.
  */
 
+#define _GNU_SOURCE
+
 #include "DH_Buffer.hpp"
 #include "DH_Common.hpp"
 
@@ -31,6 +33,7 @@
 #include <string>
 
 #include <stdarg.h>
+#include <stdio.h>
 
 DigitalHaze::Buffer::Buffer(size_t sizeInBytes, size_t reallocSize, size_t maxSize)
 	: bufferSize(0), bufferMaxSize(maxSize), buffer(nullptr) {
