@@ -86,18 +86,15 @@ size_t DigitalHaze::Base64Decode(void* src, void* dest, size_t srclen) {
 
 	DigitalHaze::BitParser destBBuf(dest, 0);
 
-	size_t discardEqualsCount = 0;
 	for (size_t i = 0; i < srclen; ++i) {
 		unsigned char curLetter = *((unsigned char*) src + i);
-		unsigned char curValue = Base64CharToInt(curLetter);
+		//if (curLetter != '=') {
+			unsigned char curValue = Base64CharToInt(curLetter);
 
-		curValue = reverse8(curValue) >> 2;
+			curValue = reverse8(curValue) >> 2;
 
-		destBBuf.WriteBits(curValue, 6);
-
-		// Equals are not counted, they are only for padding
-		if (curLetter == (unsigned char) '=') discardEqualsCount++;
-		else discardEqualsCount = 0;
+			destBBuf.WriteBits(curValue, 6);
+		//}
 	}
 
 	size_t len = (unsigned char*) destBBuf.getDataPtr() - (unsigned char*) dest;
@@ -106,7 +103,7 @@ size_t DigitalHaze::Base64Decode(void* src, void* dest, size_t srclen) {
 	for (size_t i = 0; i < len; ++i)
 		*((unsigned char*) dest + i) = reverse8(*((unsigned char*) dest + i));
 
-	return len;// - discardEqualsCount;
+	return len;
 }
 
 char DigitalHaze::IntToBase64Char(int num) {
